@@ -1,5 +1,7 @@
-TOKENIZE (string parsing for words or quoted substrings)
-========================================================
+TOKENIZE
+=========
+string parsing for words or quoted substrings
+---------------------------------------------
 
 This function splits a string into words or substrings.
 
