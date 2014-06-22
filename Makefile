@@ -3,7 +3,7 @@ LDFLAGS = -lm
 
 all: 	tokenize.c
 	gcc $(CFLAGS)  -o tokenize tokenize.c  $(LDFLAGS)   
-	markdown README.md >README.html
+	markdown README.md >readme.html
 
 clean:
 	rm -f *.o
