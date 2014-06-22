@@ -7,7 +7,7 @@
  *		the number of quotes is uneven
  *		Also add treatment for escaped space or quote characters
  *
- *	v2.1.1
+ *	v2.1.2
  *	22.06.2014
  *
  **********************************************************************/
@@ -38,13 +38,12 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-int get_token(int word_beg, int word_end, int word_count, char *buffer, char **words) {
+char** get_token(int word_beg, int word_end, int word_count, char *buffer, char **words) {
     word_count++;
     buffer[word_end+1]='\0'; // terminate string
-printf("wc:%d\tsize of words[] %d\tNombre: %d  \n", word_count,sizeof(words),sizeof(words)/sizeof(char*));
     words=realloc(words,(word_count)*sizeof(words)); //extend size of word array
     words[word_count-1]=&buffer[word_beg];	// token points to strt of word
-    return word_count;
+    return words;
 }
 
 char** tokenize(char *buf,int *n) 
@@ -81,20 +80,23 @@ char** tokenize(char *buf,int *n)
 	    case in_quote:
 		// keep going until next quote
 		if(ch == '\'') {
-		    word_count=get_token(word_beg, pos-1, word_count, buf, tokens);
+		    tokens=get_token(word_beg, pos-1, word_count, buf, tokens);
+		    word_count++;
 		    state=between_words;
 		}
 		continue; //either still in string or between words
 	    case in_dquote:	// keep going until next quote
 		if(ch == '"') {
-		    word_count=get_token(word_beg, pos-1, word_count, buf, tokens);
+		    tokens=get_token(word_beg, pos-1, word_count, buf, tokens);
+		    word_count++;
 		    state=between_words;
 		}
 		continue; //either still in string or between words
 	    case in_word:
 		//keep going until next space
 		if(isspace(ch)) {
-		    word_count=get_token(word_beg, pos-1, word_count, buf, tokens);
+		    tokens=get_token(word_beg, pos-1, word_count, buf, tokens);
+		    word_count++;
 		    state=between_words;
 		}
 		// TODO an error or warning should be generated here if ch is in_quote
@@ -102,7 +104,10 @@ char** tokenize(char *buf,int *n)
 	    }
     }
     // end of buffer is reached ('\0');
-    if(state == in_word) word_count=get_token(word_beg, pos, word_count, buf, tokens);
+    if(state == in_word) {
+	tokens=get_token(word_beg, pos-1, word_count, buf, tokens);
+	word_count++;
+    }
    
  // TODO an error or warning should be generated here if state is in_quote
     memcpy(n,&word_count,sizeof(word_count));
