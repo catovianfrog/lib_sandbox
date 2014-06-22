@@ -7,12 +7,7 @@
  *		the number of quotes is uneven
  *		Also add treatment for escaped space or quote characters
  *
- *	TODO	Main issue: very inelegant. Memory is assigned as 
- *		needed,	and the structures are complex.	Total string 
- *		memory needed is lower that the input string size, so
- *		memory allocation should be simplified 
- *
- *	v2.0
+ *	v2.1
  *	22.06.2014
  *
  **********************************************************************/
@@ -26,7 +21,7 @@ char** tokenize(char *buf,int *n);
 
 int main(int argc, char **argv) {
   //char*	s="  word1 word2 \"word 3\"  'word 4' word5";
-  char	*s="  word1 word2 \"word 3\"  'wor\"d 4' wo\"rd5";
+  char	*s="  word1 word2 \"word 3\"  'wor\"d 4' wo\"rd5 word\\ 6";
   char	*buffer;
   int	count,i;
   char  **words=NULL;
@@ -41,6 +36,15 @@ int main(int argc, char **argv) {
   free(buffer);
   free(words);
   return 0;
+}
+
+int get_token(int word_beg, int word_end, int word_count, char *buffer, char **words) {
+    word_count++;
+    buffer[word_end+1]='\0'; // terminate string
+printf("wc:%d\tsize of words[] %d\tNombre: %d  \n", word_count,sizeof(words),sizeof(words)/sizeof(char*));
+    words=realloc(words,(word_count)*sizeof(words)); //extend size of word array
+    words[word_count-1]=&buffer[word_beg];	// token points to strt of word
+    return word_count;
 }
 
 char** tokenize(char *buf,int *n) 
@@ -80,19 +84,14 @@ char** tokenize(char *buf,int *n)
 		    buf[pos]='\0'; // word finished at pos-1
                     tokens=realloc(tokens,(word_count+1)*sizeof(tokens));
                     tokens[word_count]=&buf[word_beg];	// token points to strt of word
+		    printf("wc: %d\n (in_quote)",word_count);
 		    word_count++;
 		    state=between_words;
 		}
 		continue; //either still in string or between words
-	    case in_dquote:
-		// keep going until next quote
-		if(ch == '"') {
-		    buf[pos]='\0'; // word finished at pos-1
-                    tokens=realloc(tokens,(word_count+1)*sizeof(tokens));
-                    tokens[word_count]=&buf[word_beg];	// token points to strt of word
-		    word_count++;
-		    state=between_words;
-		}
+	    case in_dquote:	// keep going until next quote
+		    printf("wc: %d\n (in_dquote)",word_count);
+		if(ch == '"') word_count=get_token(word_beg, pos-1, word_count, buf, tokens);
 		continue; //either still in string or between words
 	    case in_word:
 		//keep going until next space
@@ -107,12 +106,9 @@ char** tokenize(char *buf,int *n)
 		continue;
 	    }
     }
-    if(state == in_word) {
-	buf[pos+1]='\0'; // word finished at pos-1
-	tokens=realloc(tokens,(word_count+1)*sizeof(tokens));
-	tokens[word_count]=&buf[word_beg];	// token points to strt of word
-	word_count++;
-    }
+    // end of buffer is reached ('\0');
+    if(state == in_word) word_count=get_token(word_beg, pos, word_count, buf, tokens);
+   
  // TODO an error or warning should be generated here if state is in_quote
     memcpy(n,&word_count,sizeof(word_count));
     return tokens;
