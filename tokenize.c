@@ -7,7 +7,7 @@
  *		the number of quotes is uneven
  *		Also add treatment for escaped space or quote characters
  *
- *	v2.1
+ *	v2.1.1
  *	22.06.2014
  *
  **********************************************************************/
@@ -21,7 +21,7 @@ char** tokenize(char *buf,int *n);
 
 int main(int argc, char **argv) {
   //char*	s="  word1 word2 \"word 3\"  'word 4' word5";
-  char	*s="  word1 word2 \"word 3\"  'wor\"d 4' wo\"rd5 word\\ 6";
+  char	*s="  word1 word2 \"word 3\"  'wor\"d 4' wo\"rd5 word6";
   char	*buffer;
   int	count,i;
   char  **words=NULL;
@@ -81,25 +81,20 @@ char** tokenize(char *buf,int *n)
 	    case in_quote:
 		// keep going until next quote
 		if(ch == '\'') {
-		    buf[pos]='\0'; // word finished at pos-1
-                    tokens=realloc(tokens,(word_count+1)*sizeof(tokens));
-                    tokens[word_count]=&buf[word_beg];	// token points to strt of word
-		    printf("wc: %d\n (in_quote)",word_count);
-		    word_count++;
+		    word_count=get_token(word_beg, pos-1, word_count, buf, tokens);
 		    state=between_words;
 		}
 		continue; //either still in string or between words
 	    case in_dquote:	// keep going until next quote
-		    printf("wc: %d\n (in_dquote)",word_count);
-		if(ch == '"') word_count=get_token(word_beg, pos-1, word_count, buf, tokens);
+		if(ch == '"') {
+		    word_count=get_token(word_beg, pos-1, word_count, buf, tokens);
+		    state=between_words;
+		}
 		continue; //either still in string or between words
 	    case in_word:
 		//keep going until next space
 		if(isspace(ch)) {
-		    buf[pos]='\0'; // word finished at pos-1
-                    tokens=realloc(tokens,(word_count+1)*sizeof(tokens));
-                    tokens[word_count]=&buf[word_beg];	// token points to strt of word
-		    word_count++;
+		    word_count=get_token(word_beg, pos-1, word_count, buf, tokens);
 		    state=between_words;
 		}
 		// TODO an error or warning should be generated here if ch is in_quote
