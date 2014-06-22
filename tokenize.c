@@ -2,12 +2,9 @@
  *
  *	TOKENIZE (string parsing for words or quoted substrings)
  *
- *      this function splits a string into words or substrings
- *      TODO	add error processing when a quote occurs in a word, or 
- *		the number of quotes is uneven
- *		Also add treatment for escaped space or quote characters
+ *      This function splits a string into words or substrings
  *
- *	v2.1.2
+ *	v3.0
  *	22.06.2014
  *
  **********************************************************************/
@@ -20,22 +17,21 @@
 char** tokenize(char *buf,int *n);
 
 int main(int argc, char **argv) {
-  //char*	s="  word1 word2 \"word 3\"  'word 4' word5";
-  char	*s="  word1 word2 \"word 3\"  'wor\"d 4' wo\"rd5 word6";
   char	*buffer;
   int	count,i;
   char  **words=NULL;
 
-
-  buffer=malloc(strlen(s)+1);
-  strcpy(buffer,s);
+  // default string:
+  char	*s="  word1 word2 \"word 3  'word 4' word5 ";
+  buffer=malloc(255);
+  if(fgets(buffer,250,stdin) == NULL || strlen(buffer)==1) strcpy(buffer,s);
+  buffer[strlen(buffer)]='\0';
   words=tokenize(buffer,&count);
-  printf("%d parameters:\n",count);
   for(i=0; i<count; i++) printf("\t\t%s\n",words[i]);
 
   free(buffer);
   free(words);
-  return 0;
+  if (words != NULL) return 0; else return 1;
 }
 
 char** get_token(int word_beg, int word_end, int word_count, char *buffer, char **words) {
@@ -99,7 +95,12 @@ char** tokenize(char *buf,int *n)
 		    word_count++;
 		    state=between_words;
 		}
-		// TODO an error or warning should be generated here if ch is in_quote
+		if(ch=='\'' || ch=='\"') {
+		    fprintf(stderr, "******** ERROR: String badly constructed. Quote within a word.\n");
+		    word_count=0;
+		    tokens=NULL;
+		    goto error;
+		}
 		continue;
 	    }
     }
@@ -109,7 +110,13 @@ char** tokenize(char *buf,int *n)
 	word_count++;
     }
    
- // TODO an error or warning should be generated here if state is in_quote
+    if(state == in_quote || state== in_dquote) {
+	fprintf(stderr, "******** ERROR: String badly constructed. Uneven number of quotes.\n");
+	word_count=0;
+	tokens=NULL;
+    }
+
+error:
     memcpy(n,&word_count,sizeof(word_count));
     return tokens;
 }
