@@ -7,12 +7,11 @@
 		the number of quotes is uneven
 		Also add treatment for escaped space or quote characters
 
-      __TODO__	Main issue: very inelegant. Memory is assigned as 
-		needed,	and the structures are complex.	Total string 
-		memory needed is lower that the input string size, so
-		memory allocation should be simplified 
+Tokenize returns an array of \*strings pointing to the words in input buffer
+The __buffer is modified:__ a null character is inserted at the end of each word or quoted string.
 
-	*v1.00*
+
+	*v2.00*
 	22.06.2014
 
 
