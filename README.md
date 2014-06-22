@@ -13,9 +13,11 @@ _Tokenize_ returns an array of \*strings pointing to the words in input buffer, 
 Note that the __buffer__ (_\*buf_) __is modified:__ a null character is inserted at the end of each word or quoted string.
 
 ###Syntax
-char**	__tokenize__(_char_ *buf, _int_ *n);
+char\*\*	__tokenize__(_char_ \*buffer, _int_ \*tokens);
 
-__TODO__	Change into a library function   
+###TO DO
+- Doesn't exit cleanly upon error (memory not freed)
+- Change into a library function   
 
 
 
