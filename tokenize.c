@@ -14,7 +14,7 @@
 #include    <stdlib.h>
 
 
-char** tokenize(char *buf,int *n);
+char** tokenize(char *buf,int *word_count);
 
 int main(int argc, char **argv) {
   char	*buffer;
@@ -42,15 +42,15 @@ char** get_token(int word_beg, int word_end, int word_count, char *buffer, char 
     return words;
 }
 
-char** tokenize(char *buf,int *n) 
+char** tokenize(char *buf,int *word_count) 
 {
     enum states {between_words, in_word, in_quote, in_dquote} state;
-    int	    ch,pos,word_beg,word_count;
+    int	    ch,pos,word_beg;
     char    **tokens;
 
     tokens=NULL;
     state=between_words;
-    word_count=0;
+    *word_count=0;
     for(pos=0; buf[pos]!='\0'; pos++) {	//parse the buffer string
 	ch=buf[pos];
 	    switch (state) {
@@ -76,28 +76,28 @@ char** tokenize(char *buf,int *n)
 	    case in_quote:
 		// keep going until next quote
 		if(ch == '\'') {
-		    tokens=get_token(word_beg, pos-1, word_count, buf, tokens);
-		    word_count++;
+		    tokens=get_token(word_beg, pos-1, *word_count, buf, tokens);
+		    *word_count++;
 		    state=between_words;
 		}
 		continue; //either still in string or between words
 	    case in_dquote:	// keep going until next quote
 		if(ch == '"') {
-		    tokens=get_token(word_beg, pos-1, word_count, buf, tokens);
-		    word_count++;
+		    tokens=get_token(word_beg, pos-1, *word_count, buf, tokens);
+		    *word_count++;
 		    state=between_words;
 		}
 		continue; //either still in string or between words
 	    case in_word:
 		//keep going until next space
 		if(isspace(ch)) {
-		    tokens=get_token(word_beg, pos-1, word_count, buf, tokens);
-		    word_count++;
+		    tokens=get_token(word_beg, pos-1, *word_count, buf, tokens);
+		    *word_count++;
 		    state=between_words;
 		}
 		if(ch=='\'' || ch=='\"') {
 		    fprintf(stderr, "******** ERROR: String badly constructed. Quote within a word.\n");
-		    word_count=0;
+		    *word_count=0;
 		    tokens=NULL;
 		    goto error;
 		}
@@ -106,18 +106,18 @@ char** tokenize(char *buf,int *n)
     }
     // end of buffer is reached ('\0');
     if(state == in_word) {
-	tokens=get_token(word_beg, pos-1, word_count, buf, tokens);
-	word_count++;
+	tokens=get_token(word_beg, pos-1, *word_count, buf, tokens);
+	*word_count++;
     }
    
     if(state == in_quote || state== in_dquote) {
 	fprintf(stderr, "******** ERROR: String badly constructed. Uneven number of quotes.\n");
-	word_count=0;
+	*word_count=0;
 	tokens=NULL;
     }
 
 error:
-    memcpy(n,&word_count,sizeof(word_count));
+    //memcpy(n,&word_count,sizeof(word_count));
     return tokens;
 }
 
