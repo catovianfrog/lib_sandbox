@@ -4,7 +4,7 @@
  *
  *      This function splits a string into words or substrings
  *
- *	v3.0
+ *	v3.1
  *	22.06.2014
  *
  **********************************************************************/
@@ -77,14 +77,14 @@ char** tokenize(char *buf,int *word_count)
 		// keep going until next quote
 		if(ch == '\'') {
 		    tokens=get_token(word_beg, pos-1, *word_count, buf, tokens);
-		    *word_count++;
+		    (*word_count)++;
 		    state=between_words;
 		}
 		continue; //either still in string or between words
 	    case in_dquote:	// keep going until next quote
 		if(ch == '"') {
 		    tokens=get_token(word_beg, pos-1, *word_count, buf, tokens);
-		    *word_count++;
+		    (*word_count)++;
 		    state=between_words;
 		}
 		continue; //either still in string or between words
@@ -92,7 +92,7 @@ char** tokenize(char *buf,int *word_count)
 		//keep going until next space
 		if(isspace(ch)) {
 		    tokens=get_token(word_beg, pos-1, *word_count, buf, tokens);
-		    *word_count++;
+		    (*word_count)++;
 		    state=between_words;
 		}
 		if(ch=='\'' || ch=='\"') {
@@ -107,7 +107,7 @@ char** tokenize(char *buf,int *word_count)
     // end of buffer is reached ('\0');
     if(state == in_word) {
 	tokens=get_token(word_beg, pos-1, *word_count, buf, tokens);
-	*word_count++;
+	(*word_count)++;
     }
    
     if(state == in_quote || state== in_dquote) {
