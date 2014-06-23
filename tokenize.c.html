@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/dev/C/library_sandbox/tokenize.c.html</title>
+<meta name="Generator" content="Vim/7.3">
+<meta name="plugin-version" content="vim7.3_v10">
+<meta name="syntax" content="c">
+<meta name="settings" content="number_lines,use_css,pre_wrap,expand_tabs">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #ffffff; }
+body { font-family: monospace; color: #000000; background-color: #ffffff; }
+.lnr { color: #a52a2a; }
+.Statement { color: #a52a2a; font-weight: bold; }
+.Special { color: #6a5acd; }
+.Type { color: #2e8b57; font-weight: bold; }
+.Constant { color: #ff00ff; }
+.PreProc { color: #a020f0; }
+.Comment { color: #0000ff; }
+-->
+</style>
+</head>
+<body>
+<pre>
+<span class="lnr">  1 </span><span class="Comment">/*</span><span class="Comment">*********************************************************************</span>
+<span class="lnr">  2 </span><span class="Comment">* TOKENIZE</span>
+<span class="lnr">  3 </span><span class="Comment">*</span>
+<span class="lnr">  4 </span><span class="Comment">* This function splits a string into words or substrings</span>
+<span class="lnr">  5 </span><span class="Comment">* v3.2, 23.06.2014</span>
+<span class="lnr">  6 </span><span class="Comment">* (C) Bruno Charrière, see <a href="http://www.gnu.org/licenses/gpl.html">http://www.gnu.org/licenses/gpl.html</a></span>
+<span class="lnr">  7 </span><span class="Comment">*********************************************************************</span><span class="Comment">*/</span>
+<span class="lnr">  8 </span><span class="PreProc">#include </span><span class="Constant">&lt;stdio.h&gt;</span>
+<span class="lnr">  9 </span><span class="PreProc">#include </span><span class="Constant">&lt;string.h&gt;</span>
+<span class="lnr"> 10 </span><span class="PreProc">#include </span><span class="Constant">&lt;ctype.h&gt;</span>
+<span class="lnr"> 11 </span><span class="PreProc">#include </span><span class="Constant">&lt;stdlib.h&gt;</span>
+<span class="lnr"> 12 </span>
+<span class="lnr"> 13 </span><span class="Type">char</span>** tokenize(<span class="Type">char</span> *buf,<span class="Type">int</span> *word_count);
+<span class="lnr"> 14 </span>
+<span class="lnr"> 15 </span>
+<span class="lnr"> 16 </span><span class="Comment">//---------- Private routine used by tokenize() --------------------------------</span>
+<span class="lnr"> 17 </span><span class="Type">char</span>** get_token(<span class="Type">int</span> word_beg, <span class="Type">int</span> word_end, <span class="Type">int</span> *word_count, <span class="Type">char</span> *buffer, <span class="Type">char</span> **words) {
+<span class="lnr"> 18 </span>    (*word_count)++;
+<span class="lnr"> 19 </span>    buffer[word_end+<span class="Constant">1</span>]=<span class="Special">'\0'</span>; <span class="Comment">// terminate string</span>
+<span class="lnr"> 20 </span>    words=realloc(words,*(word_count)*<span class="Statement">sizeof</span>(words)); <span class="Comment">//extend size of word array</span>
+<span class="lnr"> 21 </span>    words[*word_count-<span class="Constant">1</span>]=&amp;buffer[word_beg];     <span class="Comment">// token points to strt of word</span>
+<span class="lnr"> 22 </span>    <span class="Statement">return</span> words;
+<span class="lnr"> 23 </span>}
+<span class="lnr"> 24 </span><span class="Comment">//---------- Tokenize() --------------------------------------------------------</span>
+<span class="lnr"> 25 </span><span class="Type">char</span>** tokenize(<span class="Type">char</span> *buf,<span class="Type">int</span> *word_count)
+<span class="lnr"> 26 </span>{
+<span class="lnr"> 27 </span>    <span class="Type">enum</span>    states {between_words, in_word, in_quote, in_dquote} state;
+<span class="lnr"> 28 </span>    <span class="Type">int</span>     ch,pos,word_beg;
+<span class="lnr"> 29 </span>    <span class="Type">char</span>    **tokens;
+<span class="lnr"> 30 </span>    <span class="Type">char</span>*   err_msg;
+<span class="lnr"> 31 </span>
+<span class="lnr"> 32 </span>    tokens=<span class="Constant">NULL</span>;
+<span class="lnr"> 33 </span>    state=between_words;
+<span class="lnr"> 34 </span>    *word_count=<span class="Constant">0</span>;
+<span class="lnr"> 35 </span>    <span class="Statement">for</span>(pos=<span class="Constant">0</span>; buf[pos]!=<span class="Special">'\0'</span>; pos++) { <span class="Comment">//parse the buffer string</span>
+<span class="lnr"> 36 </span>        ch=buf[pos];
+<span class="lnr"> 37 </span>            <span class="Statement">switch</span> (state) {
+<span class="lnr"> 38 </span>            <span class="Statement">case</span> between_words:
+<span class="lnr"> 39 </span>               <span class="Statement">if</span>(isspace(ch)) <span class="Statement">continue</span>;<span class="Comment">// still not in a word, ignore this char</span>
+<span class="lnr"> 40 </span>               <span class="Comment">// ch is not a space. Enter either a quoted string or a word</span>
+<span class="lnr"> 41 </span>                <span class="Statement">if</span>(ch == <span class="Special">'\''</span>) {
+<span class="lnr"> 42 </span>                   state=in_quote;
+<span class="lnr"> 43 </span>                   word_beg=pos+<span class="Constant">1</span>; <span class="Comment">//word starts after the quote</span>
+<span class="lnr"> 44 </span>                   <span class="Statement">continue</span>;
+<span class="lnr"> 45 </span>               }
+<span class="lnr"> 46 </span>                <span class="Statement">if</span>(ch == <span class="Constant">'&quot;'</span>) {
+<span class="lnr"> 47 </span>                   state=in_dquote;
+<span class="lnr"> 48 </span>                   word_beg=pos+<span class="Constant">1</span>; <span class="Comment">//word starts after the quote</span>
+<span class="lnr"> 49 </span>                   <span class="Statement">continue</span>;
+<span class="lnr"> 50 </span>               } <span class="Comment">// not a space nor a quote: in a word</span>
+<span class="lnr"> 51 </span>               state=in_word;
+<span class="lnr"> 52 </span>               word_beg=pos;   <span class="Comment">// word starts here</span>
+<span class="lnr"> 53 </span>               <span class="Statement">continue</span>;
+<span class="lnr"> 54 </span>            <span class="Statement">case</span> in_quote:      <span class="Comment">// keep going until next quote</span>
+<span class="lnr"> 55 </span>               <span class="Statement">if</span>(ch == <span class="Special">'\''</span>) {
+<span class="lnr"> 56 </span>                   tokens=get_token(word_beg, pos-<span class="Constant">1</span>, word_count, buf, tokens);
+<span class="lnr"> 57 </span>                   state=between_words;
+<span class="lnr"> 58 </span>               }
+<span class="lnr"> 59 </span>               <span class="Statement">continue</span>; <span class="Comment">//either still in string or between words</span>
+<span class="lnr"> 60 </span>            <span class="Statement">case</span> in_dquote:     <span class="Comment">// keep going until next quote</span>
+<span class="lnr"> 61 </span>               <span class="Statement">if</span>(ch == <span class="Constant">'&quot;'</span>) {
+<span class="lnr"> 62 </span>                   tokens=get_token(word_beg, pos-<span class="Constant">1</span>, word_count, buf, tokens);
+<span class="lnr"> 63 </span>                   state=between_words;
+<span class="lnr"> 64 </span>               }
+<span class="lnr"> 65 </span>               <span class="Statement">continue</span>;       <span class="Comment">//either still in string or between words</span>
+<span class="lnr"> 66 </span>            <span class="Statement">case</span> in_word:       <span class="Comment">//keep going until next space</span>
+<span class="lnr"> 67 </span>               <span class="Statement">if</span>(isspace(ch)) {
+<span class="lnr"> 68 </span>                   tokens=get_token(word_beg, pos-<span class="Constant">1</span>, word_count, buf, tokens);
+<span class="lnr"> 69 </span>                   state=between_words;
+<span class="lnr"> 70 </span>               }
+<span class="lnr"> 71 </span>               <span class="Statement">if</span>(ch==<span class="Special">'\''</span> || ch==<span class="Special">'\&quot;'</span>) {
+<span class="lnr"> 72 </span>                   err_msg=<span class="Constant">&quot;String badly constructed. Quote within a word.&quot;</span>;
+<span class="lnr"> 73 </span>                   <span class="Statement">goto</span> error;
+<span class="lnr"> 74 </span>               }
+<span class="lnr"> 75 </span>               <span class="Statement">continue</span>;
+<span class="lnr"> 76 </span>            }
+<span class="lnr"> 77 </span>    }
+<span class="lnr"> 78 </span>    <span class="Comment">// end of buffer is reached ('\0');</span>
+<span class="lnr"> 79 </span>    <span class="Statement">if</span>(state == in_word) tokens=get_token(word_beg, pos-<span class="Constant">1</span>, word_count, buf, tokens);
+<span class="lnr"> 80 </span>    <span class="Statement">if</span>(state == in_quote || state== in_dquote) {
+<span class="lnr"> 81 </span>        err_msg=<span class="Constant">&quot;String badly constructed. Uneven number of quotes.&quot;</span>;
+<span class="lnr"> 82 </span>        <span class="Statement">goto</span> error;
+<span class="lnr"> 83 </span>    }
+<span class="lnr"> 84 </span>    <span class="Statement">return</span> tokens;
+<span class="lnr"> 85 </span>
+<span class="lnr"> 86 </span><span class="Statement">error</span>:
+<span class="lnr"> 87 </span>    fprintf(<span class="Constant">stderr</span>, <span class="Constant">&quot;******** ERROR: </span><span class="Special">%s</span><span class="Special">\n</span><span class="Constant">&quot;</span>,err_msg);
+<span class="lnr"> 88 </span>    *word_count=<span class="Constant">0</span>;
+<span class="lnr"> 89 </span>    tokens=<span class="Constant">NULL</span>;
+<span class="lnr"> 90 </span>    <span class="Statement">return</span> tokens;
+<span class="lnr"> 91 </span>}
+<span class="lnr"> 92 </span>
+<span class="lnr"> 93 </span><span class="Comment">/*</span><span class="Comment">*********************************************************************</span>
+<span class="lnr"> 94 </span><span class="Comment"> *           MAIN</span>
+<span class="lnr"> 95 </span><span class="Comment"> *  only for testing purposes (must be commented out)</span>
+<span class="lnr"> 96 </span><span class="Comment"> **********************************************************************</span>
+<span class="lnr"> 97 </span><span class="Comment">int main(int argc, char **argv) {</span>
+<span class="lnr"> 98 </span><span class="Comment">  char  *buffer;</span>
+<span class="lnr"> 99 </span><span class="Comment">  int   count,i;</span>
+<span class="lnr">100 </span><span class="Comment">  char **words=NULL;</span>
+<span class="lnr">101 </span><span class="Comment">  char  *s=&quot; word1 word2 \&quot;word 3o\&quot; 'word 4' word5&quot; ;</span>
+<span class="lnr">102 </span><span class="Comment">  buffer=malloc(255);</span>
+<span class="lnr">103 </span><span class="Comment">  if(fgets(buffer,250,stdin) == NULL || strlen(buffer)==1) strcpy(buffer,s);</span>
+<span class="lnr">104 </span><span class="Comment">  buffer[strlen(buffer)]='\0';</span>
+<span class="lnr">105 </span><span class="Comment">  words=tokenize(buffer,&amp;count);</span>
+<span class="lnr">106 </span><span class="Comment">  for(i=0; i&lt;count; i++) printf(&quot;\t\t%s\n&quot;,words[i]);</span>
+<span class="lnr">107 </span><span class="Comment">  free(buffer);</span>
+<span class="lnr">108 </span><span class="Comment">  free(words);</span>
+<span class="lnr">109 </span><span class="Comment">  if (words != NULL) return 0; else return 1;</span>
+<span class="lnr">110 </span><span class="Comment">}</span><span class="Comment">*/</span>
+</pre>
+</body>
+</html>

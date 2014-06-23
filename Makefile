@@ -5,6 +5,10 @@ all: 	tokenize.c
 	gcc $(CFLAGS)  -o tokenize tokenize.c  $(LDFLAGS)   
 	markdown README.md >readme.html
 
+libstring:	libstring.c
+	gcc $(CFLAGS)  -c libstring.c
+	markdown README.md >readme.html
+
 clean:
 	rm -f *.o
 	rm -f test

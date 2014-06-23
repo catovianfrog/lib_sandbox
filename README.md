@@ -3,23 +3,26 @@ TOKENIZE
 String parsing for words or quoted substrings
 ---------------------------------------------
 
-*v3.0*
+*v3.2*
 
 22.06.2014    
 
 This function splits a string into words or substrings.
+This is a small exercise to learn C. The same function in Perl would probably
+take only a couple of lines of code. 
 
-_Tokenize_ returns an array of \*strings pointing to the words in input buffer, and the number of strings as a \*int.
-Note that the __buffer__ (_\*buf_) __is modified:__ a null character is inserted at the end of each word or quoted string.
+
+
+_Tokenize_ returns an array of strings pointing to the words in the input buffer. The number of strings
+is returned as an \*int parameter passed by reference.
+
+Note that the source string __buffer__ (_\*buf_) __is modified:__ a null character is inserted at the end of each word or quoted string.
 
 ###Syntax
-char\*\*	__tokenize__(_char_ \*buffer, _int_ \*tokens);
+char\*\*	__tokenize__(_char_ \*buffer, _int_ \*word_count);
 
-###TO DO
-- Doesn't exit cleanly upon error (memory not freed)
-- Change into a library function   
-
-
+###To Do
+* nil
 
 ###Log History
 

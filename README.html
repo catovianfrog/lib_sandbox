@@ -1,0 +1,35 @@
+<h1>TOKENIZE</h1>
+
+<h2>String parsing for words or quoted substrings</h2>
+
+<p><em>v3.2</em></p>
+
+<p>22.06.2014    </p>
+
+<p>This function splits a string into words or substrings.
+This is a small exercise to learn C. The same function in Perl would probably
+take only a couple of lines of code. </p>
+
+<p><em>Tokenize</em> returns an array of strings pointing to the words in the input buffer. The number of strings
+is returned as an *int parameter passed by reference.</p>
+
+<p>Note that the source string <strong>buffer</strong> (<em>*buf</em>) <strong>is modified:</strong> a null character is inserted at the end of each word or quoted string.</p>
+
+<h3>Syntax</h3>
+
+<p>char**    <strong>tokenize</strong>(<em>char</em> *buffer, <em>int</em> *word_count);</p>
+
+<h3>To Do</h3>
+
+<ul>
+<li>nil</li>
+</ul>
+
+<h3>Log History</h3>
+
+<ul>
+<li>v3  Prints error message on stderr and returns non-zero when syntax error (uneven number of quotes, or quotes within words)</li>
+<li>v2  Memory allocation cleaned up. Doesn't allocate memory to returned strings, but return pointers to 
+strings in input buffer. Input puffer is modified with end-of-strins characters.</li>
+<li>v1  works, but memory almlocation is a mess</li>
+</ul>
