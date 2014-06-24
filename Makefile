@@ -1,15 +1,15 @@
 CFLAGS=-Wall -g -DNDBUG -O0
 LDFLAGS = -lm
 
-all: 	tokenize.c
-	gcc $(CFLAGS)  -o tokenize tokenize.c  $(LDFLAGS)   
-	markdown README.md >readme.html
+all: 	tokenize.c libstring.o
+	gcc $(CFLAGS)  -c tokenize.c  $(LDFLAGS)   
+	gcc $(CFLAGS)  tokenize.o libstring.o -o tokenize  $(LDFLAGS)   
 
-libstring:	libstring.c
+libstring.o:	libstring.c
 	gcc $(CFLAGS)  -c libstring.c
-	markdown README.md >readme.html
 
 clean:
+	markdown README.md > README.html
 	rm -f *.o
 	rm -f test
 	rm -f pca

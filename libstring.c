@@ -1,16 +1,15 @@
 /**********************************************************************
 * LIBSTRING
 *
-* Basic string functions for my own use as a learner of C language
-* v0.1, 23.06.2014
+* String manipulation library
+* v0.1	June 2014
 * (C) Bruno Charrière, see http://www.gnu.org/licenses/gpl.html
 **********************************************************************/
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-
-char** tokenize(char *buf,int *word_count);
+#include "libstring.h"
 
 
 //---------- Private routine used by tokenize() --------------------------------
@@ -21,7 +20,10 @@ char** get_token(int word_beg, int word_end, int *word_count, char *buffer, char
     words[*word_count-1]=&buffer[word_beg];	// token points to strt of word
     return words;
 }
-//---------- Tokenize() --------------------------------------------------------
+ /**********************************************************************
+*	    Tokenize
+* This function splits a string into words or substrings
+**********************************************************************/
 char** tokenize(char *buf,int *word_count)
 {
     enum    states {between_words, in_word, in_quote, in_dquote} state;

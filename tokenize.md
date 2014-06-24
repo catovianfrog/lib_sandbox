@@ -1,20 +1,12 @@
-LIBSTRING library
-=================
-Library of string manipulating functions
+TOKENIZE
+=========
+String parsing for words or quoted substrings
 ---------------------------------------------
 
-*v1.0²
+*v3.2*
 
-24.06.2014    
+22.06.2014    
 
-This library was originally built for string functions in my _pca_ statistical
-program for principal component analysis. PCA is my first program written in C,
-and therefore _libstring_ is my first library written in this language.
-
-FUNCTIONS & FEATURES
---------------------
-
-### tokenize
 This function splits a string into words or substrings.
 This is a small exercise to learn C. The same function in Perl would probably
 take only a couple of lines of code. 
@@ -26,10 +18,16 @@ is returned as an \*int parameter passed by reference.
 
 Note that the source string __buffer__ (_\*buf_) __is modified:__ a null character is inserted at the end of each word or quoted string.
 
-####Syntax
+###Syntax
 char\*\*	__tokenize__(_char_ \*buffer, _int_ \*word_count);
+
+###To Do
+* nil
 
 ###Log History
 
-* v1	implements _tokenize()_
+* v3  Prints error message on stderr and returns non-zero when syntax error (uneven number of quotes, or quotes within words)
+* v2  Memory allocation cleaned up. Doesn't allocate memory to returned strings, but return pointers to 
+strings in input buffer. Input puffer is modified with end-of-strins characters.
+* v1  works, but memory almlocation is a mess
 
